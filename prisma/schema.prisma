@@ -4,8 +4,11 @@ generator client {
 
 datasource db {
   provider = "mysql"
-  // KITA TULIS LANGSUNG DI SINI BIAR GAK ERROR
-  url      = "mysql://root:@localhost:3306/pustaka_kreatif_db"
+  // KITA TULIS LANGSUNG DI SINI BIAR GAK ERROR (nonaktif dulu karna mau bikin online)
+  // url      = "mysql://root:@localhost:3306/pustaka_kreatif_db"
+
+  //url onlinenya ini
+  url      = "mysql://F2BFSepDNKqwinK.root:UkgPVJ7l79ud4m2g@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/test?sslaccept=strict"
 }
 
 model User {
