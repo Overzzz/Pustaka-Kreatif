@@ -98,7 +98,7 @@ app.post('/book/:id/borrow', async (req, res) => {
     } catch (error) { res.send("Gagal pinjam."); }
 });
 
-// --- ADMIN DASHBOARD (UPDATE STOK) ---
+// --- ADMIN DASHBOARD ---
 app.get('/admin', async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.send("Akses Ditolak");
     
@@ -112,13 +112,10 @@ app.get('/admin', async (req, res) => {
         orderBy: { dueDate: 'asc' } 
     });
     
-    // UPDATE: Ambil buku beserta jumlah copy-nya
     const allBooks = await prisma.book.findMany({ 
         orderBy: { title: 'asc' },
         include: {
-            copies: {
-                where: { isAvailable: true } // Cuma hitung yang tersedia
-            }
+            copies: { where: { isAvailable: true } }
         }
     });
 
@@ -127,7 +124,6 @@ app.get('/admin', async (req, res) => {
     res.render('admin', { countBooks, countUsers, countLoans, activeLoans, allBooks, allUsers });
 });
 
-// ROUTE: TAMBAH STOK (+1)
 app.post('/book/:id/add-copy', async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).send("Bukan Admin.");
     const bookId = parseInt(req.params.id);
@@ -139,12 +135,10 @@ app.post('/book/:id/add-copy', async (req, res) => {
     } catch (e) { res.send("Gagal nambah stok."); }
 });
 
-// ROUTE: KURANG STOK (-1)
 app.post('/book/:id/remove-copy', async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).send("Bukan Admin.");
     const bookId = parseInt(req.params.id);
     try {
-        // Cari 1 buku yang available buat dihapus
         const copy = await prisma.bookCopy.findFirst({ where: { bookId: bookId, isAvailable: true } });
         if (copy) {
             await prisma.bookCopy.delete({ where: { id: copy.id } });
@@ -182,7 +176,6 @@ app.post('/user/:id/delete', async (req, res) => {
     } catch (error) { res.send("Gagal hapus user."); }
 });
 
-// --- HALAMAN LAINNYA ---
 app.get('/add-book', (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.send("Akses Ditolak.");
     res.render('add-book');
@@ -222,7 +215,6 @@ app.post('/return/:loanId', async (req, res) => {
     res.redirect('/profile');
 });
 
-// --- AUTH ---
 app.get('/register', (req, res) => res.render('register'));
 app.post('/register', async (req, res) => {
     const { username, email, password } = req.body;
@@ -240,7 +232,10 @@ app.post('/login', async (req, res) => {
 });
 app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/'); });
 
+// KHUSUS VERCEL: Export app
 module.exports = app;
+
+// KHUSUS LOKAL: Listen port
 if (require.main === module) {
     app.listen(3000, () => console.log('Server jalan di port 3000 🚀'));
 }
