@@ -181,12 +181,38 @@ app.get('/add-book', (req, res) => {
     res.render('add-book');
 });
 
+// --- ROUTE ADD BOOK YANG SUDAH DIPERBARUI (BISA URL & UPLOAD) ---
 app.post('/add-book', upload.single('coverImage'), async (req, res) => {
     if (!req.session.user || req.session.user.role !== 'admin') return res.status(403).send("Bukan Admin.");
-    const { title, author, synopsis, pageCount, moodTags } = req.body;
-    const coverImage = req.file ? '/uploads/' + req.file.filename : null;
-    await prisma.book.create({ data: { title, author, synopsis, pageCount: parseInt(pageCount), moodTags, coverImage, copies: { create: { condition: 'New', shelfLocation: 'Rak Baru' } } } });
-    res.redirect('/');
+    
+    // Ambil data termasuk coverUrl dari form
+    const { title, author, synopsis, pageCount, moodTags, coverUrl } = req.body;
+    
+    // Logika Pintar: Pilih Upload File ATAU Link URL
+    let finalCover = null;
+    if (req.file) {
+        finalCover = '/uploads/' + req.file.filename; // Kalau ada file, pakai file
+    } else if (coverUrl) {
+        finalCover = coverUrl; // Kalau gak ada file, pakai link URL
+    }
+
+    try {
+        await prisma.book.create({ 
+            data: { 
+                title, 
+                author, 
+                synopsis, 
+                pageCount: parseInt(pageCount), 
+                moodTags, 
+                coverImage: finalCover, 
+                copies: { create: { condition: 'New', shelfLocation: 'Rak Baru' } } 
+            } 
+        });
+        res.redirect('/');
+    } catch (error) {
+        console.log(error);
+        res.send("Gagal menambah buku. Pastikan data benar.");
+    }
 });
 
 app.get('/profile', async (req, res) => {

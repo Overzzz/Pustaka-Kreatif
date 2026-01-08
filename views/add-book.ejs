@@ -6,49 +6,64 @@
     <title>Tambah Buku Baru</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #2c3e50; margin-bottom: 30px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; margin-bottom: 8px; font-weight: bold; color: #555; }
-        input, textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn-submit { width: 100%; padding: 15px; background: #2980b9; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
-        .btn-back { display: block; text-align: center; margin-top: 20px; text-decoration: none; color: #555; }
+        input[type="text"], input[type="number"], textarea, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        
+        .btn-submit { width: 100%; padding: 12px; background: #27ae60; color: white; border: none; border-radius: 5px; font-size: 1.1em; cursor: pointer; margin-top: 10px; }
+        .btn-submit:hover { background: #219150; }
+        .btn-back { display: block; text-align: center; margin-top: 20px; text-decoration: none; color: #777; }
+
+        .note { font-size: 0.8em; color: #e67e22; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>✨ Tambah Koleksi Baru</h2>
+        <h1>📚 Tambah Buku</h1>
         
         <form action="/add-book" method="POST" enctype="multipart/form-data">
             
             <div class="form-group">
-                <label>Cover Buku (Gambar)</label>
-                <input type="file" name="coverImage" accept="image/*" required>
+                <label>Judul Buku</label>
+                <input type="text" name="title" required placeholder="Contoh: Laskar Pelangi">
             </div>
 
-            <div class="form-group">
-                <label>Judul Buku</label>
-                <input type="text" name="title" required>
-            </div>
             <div class="form-group">
                 <label>Penulis</label>
-                <input type="text" name="author" required>
-            </div>
-            <div class="form-group">
-                <label>Sinopsis</label>
-                <textarea name="synopsis" style="height:100px" required></textarea>
-            </div>
-            <div class="form-group">
-                <label>Halaman</label>
-                <input type="number" name="pageCount" required>
-            </div>
-            <div class="form-group">
-                <label>Mood Tags</label>
-                <input type="text" name="moodTags" placeholder="Contoh: Seru, Horror">
+                <input type="text" name="author" required placeholder="Nama Pengarang">
             </div>
 
-            <button type="submit" class="btn-submit">Simpan & Upload</button>
-            <a href="/" class="btn-back">Batal</a>
+            <div class="form-group">
+                <label>Sinopsis Singkat</label>
+                <textarea name="synopsis" rows="4" placeholder="Ceritakan sedikit tentang buku ini..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Jumlah Halaman</label>
+                <input type="number" name="pageCount" required>
+            </div>
+
+            <div class="form-group">
+                <label>Tags Mood (Pisahkan dengan koma)</label>
+                <input type="text" name="moodTags" placeholder="Contoh: Sedih, Inspiratif, Petualangan">
+            </div>
+
+            <div class="form-group" style="background: #f9f9f9; padding: 15px; border-radius: 8px; border: 1px dashed #ccc;">
+                <label>Opsi 1: Upload Cover (Khusus Offline/Laptop)</label>
+                <input type="file" name="coverImage" accept="image/*">
+                <div class="note">⚠️ Di Vercel (Online), fitur ini error. Kosongkan saja.</div>
+            </div>
+
+            <div class="form-group" style="background: #e8f6f3; padding: 15px; border-radius: 8px; border: 1px solid #27ae60;">
+                <label>Opsi 2: Link Gambar (Disarankan untuk Online)</label>
+                <input type="text" name="coverUrl" placeholder="https://google.com/gambar-buku.jpg">
+                <div class="note">✅ Copy link gambar dari Google (klik kanan gambar > Copy Image Address)</div>
+            </div>
+
+            <button type="submit" class="btn-submit">Simpan Buku</button>
+            <a href="/admin" class="btn-back">Batal</a>
         </form>
     </div>
 </body>
