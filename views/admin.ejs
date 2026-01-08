@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: #333; margin: 0; }
+        .btn-home { text-decoration: none; color: #555; background: white; padding: 10px 20px; border-radius: 5px; font-weight: bold; }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 40px; }
+        .stat-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); text-align: center; }
+        .stat-number { font-size: 2.5em; font-weight: bold; color: #3498db; margin: 10px 0; }
+        .stat-label { color: #777; }
+
+        .panel { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        h2 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 15px; margin-bottom: 20px; color: #2c3e50; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; color: #555; }
+        tr:hover { background: #fbfbfb; }
+
+        .btn-delete { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8em; }
+        .btn-delete:hover { background: #c0392b; }
+        
+        .btn-stok { border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer; color: white; font-weight: bold; margin: 0 2px; }
+        .btn-plus { background: #27ae60; }
+        .btn-minus { background: #f39c12; }
+
+        .level-badge { background: #3498db; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.8em; }
+        .action-group { display: flex; align-items: center; gap: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <h1>👮‍♂️ Pusat Komando Admin</h1>
+            <a href="/" class="btn-home">← Kembali ke Web</a>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Buku</div>
+                <div class="stat-number"><%= countBooks %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Siswa</div>
+                <div class="stat-number"><%= countUsers %></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Sedang Dipinjam</div>
+                <div class="stat-number"><%= countLoans %></div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📢 Monitoring Peminjaman (Aktif)</h2>
+            <% if (activeLoans.length === 0) { %>
+                <p style="color: #999; text-align: center;">Tidak ada yang sedang meminjam buku.</p>
+            <% } else { %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Peminjam</th>
+                            <th>Judul Buku</th>
+                            <th>Jatuh Tempo</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% activeLoans.forEach(loan => { %>
+                            <tr>
+                                <td><b><%= loan.user.username %></b></td>
+                                <td><%= loan.bookCopy.book.title %></td>
+                                <td><%= loan.dueDate.toLocaleDateString('id-ID') %></td>
+                                <td>
+                                    <% const sisa = Math.ceil((new Date(loan.dueDate) - new Date()) / (1000 * 60 * 60 * 24)); %>
+                                    <% if (sisa < 0) { %>
+                                        <span style="color: red; font-weight: bold;">Telat <%= Math.abs(sisa) %> hari!</span>
+                                    <% } else { %>
+                                        <span style="color: green;"><%= sisa %> hari lagi</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            <% } %>
+        </div>
+
+        <div class="panel">
+            <h2>📚 Manajemen Buku & Stok</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Judul Buku</th>
+                        <th>Stok</th>
+                        <th>Atur Stok</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% allBooks.forEach(book => { %>
+                        <tr>
+                            <td>#<%= book.id %></td>
+                            <td><%= book.title %></td>
+                            
+                            <td style="font-weight: bold; font-size: 1.1em; color: #2980b9;">
+                                <%= book.copies.length %>
+                            </td>
+
+                            <td>
+                                <div class="action-group">
+                                    <form action="/book/<%= book.id %>/remove-copy" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn-stok btn-minus" title="Kurangi 1 Stok">-</button>
+                                    </form>
+                                    <form action="/book/<%= book.id %>/add-copy" method="POST" style="display:inline;">
+                                        <button type="submit" class="btn-stok btn-plus" title="Tambah 1 Stok">+</button>
+                                    </form>
+                                </div>
+                            </td>
+
+                            <td>
+                                <form action="/book/<%= book.id %>/delete" method="POST" onsubmit="return confirm('Yakin mau hapus buku ini?');">
+                                    <button type="submit" class="btn-delete">Hapus</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="panel">
+            <h2>👥 Daftar Anggota Siswa</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nama User</th>
+                        <th>Email</th>
+                        <th>Level</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% allUsers.forEach(u => { %>
+                        <tr>
+                            <td><b><%= u.username %></b></td>
+                            <td><%= u.email %></td>
+                            <td><span class="level-badge">Lvl. <%= u.level %></span></td>
+                            <td>
+                                <form action="/user/<%= u.id %>/delete" method="POST" onsubmit="return confirm('Yakin keluarkan siswa ini?');">
+                                    <button type="submit" class="btn-delete">Keluarkan</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+</body>
+</html>

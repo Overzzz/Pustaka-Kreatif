@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Library Board</title>
+    <meta http-equiv="refresh" content="30">
+    <style>
+        body {
+            background-color: #0f172a; /* Dark Blue Theme */
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 40px;
+            height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 40px;
+        }
+
+        /* HEADER */
+        .header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { margin: 0; font-size: 2.5em; background: -webkit-linear-gradient(#3498db, #8e44ad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .clock { font-size: 1.5em; font-weight: bold; color: #94a3b8; }
+
+        /* KIRI: TOP RANKING */
+        .rank-section {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 1px solid #334155;
+        }
+        h2 { color: #f1c40f; margin-top: 0; font-size: 1.8em; display: flex; align-items: center; gap: 10px; }
+        
+        .rank-list { list-style: none; padding: 0; }
+        .rank-item {
+            display: flex;
+            align-items: center;
+            background: #334155;
+            margin-bottom: 15px;
+            padding: 20px;
+            border-radius: 15px;
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+        /* Efek Juara 1-3 */
+        .rank-item:nth-child(1) { background: linear-gradient(90deg, #f1c40f, #b7950b); color: black; font-weight: bold; transform: scale(1.02); }
+        .rank-item:nth-child(2) { background: #cbd5e1; color: black; } /* Silver */
+        .rank-item:nth-child(3) { background: #b45309; color: white; } /* Bronze */
+
+        .rank-num { font-weight: bold; width: 50px; }
+        .rank-name { flex-grow: 1; }
+        .rank-xp { font-size: 0.8em; opacity: 0.9; }
+
+        /* KANAN: SIDEBAR */
+        .side-section { display: flex; flex-direction: column; gap: 30px; }
+        
+        .new-books {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 20px;
+            flex-grow: 1;
+            border: 1px solid #334155;
+        }
+        .book-item {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 15px;
+        }
+        .book-cover { width: 60px; height: 80px; background: #475569; border-radius: 5px; object-fit: cover; }
+        .book-info h3 { margin: 0 0 5px 0; font-size: 1.1em; color: #60a5fa; }
+        .book-info p { margin: 0; font-size: 0.9em; color: #94a3b8; }
+
+        .total-stat {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            color: white;
+        }
+        .total-num { font-size: 4em; font-weight: bold; line-height: 1; }
+        .total-label { font-size: 1.2em; opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1>🏆 Hall of Fame - Pustaka Kreatif</h1>
+        <div class="clock" id="clock">00:00</div>
+    </div>
+
+    <div class="rank-section">
+        <h2>👑 Top 5 Pembaca Paling Rajin</h2>
+        <ul class="rank-list">
+            <% topUsers.forEach((user, index) => { %>
+                <li class="rank-item">
+                    <span class="rank-num">#<%= index + 1 %></span>
+                    <span class="rank-name"><%= user.username %></span>
+                    <span class="rank-xp">Lvl. <%= user.level %> (<%= user.xpPoints %> XP)</span>
+                </li>
+            <% }) %>
+            <% if(topUsers.length === 0) { %>
+                <li style="padding:20px; text-align:center; color:#94a3b8;">Belum ada data siswa.</li>
+            <% } %>
+        </ul>
+    </div>
+
+    <div class="side-section">
+        <div class="new-books">
+            <h2>📚 Koleksi Baru</h2>
+            <% newBooks.forEach(book => { %>
+                <div class="book-item">
+                    <% if(book.coverImage) { %>
+                        <img src="<%= book.coverImage %>" class="book-cover">
+                    <% } else { %>
+                        <div class="book-cover" style="display:flex;align-items:center;justify-content:center;font-size:0.8em;">No Cover</div>
+                    <% } %>
+                    <div class="book-info">
+                        <h3><%= book.title %></h3>
+                        <p><%= book.author %></p>
+                        <span style="font-size:0.8em; background:#334155; padding:2px 6px; border-radius:4px; margin-top:5px; display:inline-block;"><%= book.moodTags || 'Umum' %></span>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+
+        <div class="total-stat">
+            <div class="total-num"><%= totalReads %></div>
+            <div class="total-label">Buku Telah Dibaca Siswa</div>
+        </div>
+    </div>
+
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('clock').innerText = hours + ':' + minutes;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
+</body>
+</html>

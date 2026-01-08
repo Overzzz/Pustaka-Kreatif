@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Buku - <%= book.title %></title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; gap: 40px; }
+        
+        .top-section { display: flex; gap: 40px; }
+        .cover-area { width: 300px; flex-shrink: 0; }
+        .book-cover-img { width: 100%; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .placeholder-cover { width: 100%; height: 400px; background: #ddd; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #777; font-size: 1.2em; }
+        
+        .book-info { flex-grow: 1; }
+        h1 { margin-top: 0; color: #333; font-size: 2.2em; line-height: 1.2; margin-bottom: 5px; }
+        .author { color: #7f8c8d; font-size: 1.1em; margin-bottom: 20px; font-weight: 500; }
+        
+        .meta-tags { display: flex; gap: 10px; margin-bottom: 25px; align-items: center; }
+        .tag { background: #eee; padding: 5px 12px; border-radius: 20px; font-size: 0.85em; color: #555; font-weight: bold; }
+        .mood { background: #e1ecf4; color: #39739d; }
+        .star-rating { color: #f1c40f; font-weight: bold; font-size: 1.2em; }
+
+        .synopsis-box { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-bottom: 30px; border-left: 4px solid #3498db; }
+        .synopsis-title { font-weight: bold; margin-bottom: 5px; color: #333; display: block; }
+        .synopsis { line-height: 1.8; color: #444; margin: 0; text-align: justify; }
+
+        .action-area { padding: 25px; background: #fff; border: 2px solid #f0f2f5; border-radius: 12px; }
+        .stock-info { font-weight: bold; margin-bottom: 15px; display: block; font-size: 1.1em; }
+        .text-green { color: #27ae60; }
+        .text-red { color: #c0392b; }
+
+        .btn-borrow { display: block; width: 100%; text-align: center; background: #2980b9; color: white; padding: 15px; text-decoration: none; border-radius: 8px; font-weight: bold; transition: 0.2s; border: none; cursor: pointer; font-size: 16px; }
+        .btn-borrow:hover { background: #21618c; }
+        .btn-disabled { background: #bdc3c7; cursor: not-allowed; }
+        .back-link { display: block; margin-top: 20px; text-decoration: none; color: #777; font-weight: bold; }
+
+        /* --- SECTION REVIEW --- */
+        .review-section { border-top: 2px solid #eee; padding-top: 30px; }
+        h2 { color: #333; margin-bottom: 20px; }
+        
+        .review-form { background: #fdfdfd; padding: 20px; border: 1px solid #eee; border-radius: 10px; margin-bottom: 30px; }
+        .form-row { display: flex; gap: 20px; margin-bottom: 15px; }
+        select, textarea { padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        textarea { width: 100%; resize: vertical; }
+        .btn-review { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        
+        .review-list { display: grid; gap: 20px; }
+        .review-card { background: white; padding: 15px; border-bottom: 1px solid #eee; }
+        .reviewer-name { font-weight: bold; color: #2c3e50; }
+        .review-date { font-size: 0.8em; color: #999; margin-left: 10px; }
+        .review-stars { color: #f1c40f; margin: 5px 0; }
+        .review-text { color: #555; line-height: 1.5; }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <div class="top-section">
+            <div class="cover-area">
+                <% if (book.coverImage) { %>
+                    <img src="<%= book.coverImage %>" alt="Cover" class="book-cover-img">
+                <% } else { %>
+                    <div class="placeholder-cover">COVER</div>
+                <% } %>
+            </div>
+
+            <div class="book-info">
+                <h1><%= book.title %></h1>
+                <div class="author">Penulis: <%= book.author %></div>
+
+                <div class="meta-tags">
+                    <span class="tag">📖 <%= book.pageCount %> Halaman</span>
+                    <% if(book.moodTags) { %>
+                        <span class="tag mood">✨ <%= book.moodTags %></span>
+                    <% } %>
+                    <span class="star-rating">★ <%= avgRating %> / 5.0</span>
+                </div>
+
+                <div class="synopsis-box">
+                    <span class="synopsis-title">Sinopsis:</span>
+                    <p class="synopsis"><%= book.synopsis %></p>
+                </div>
+
+                <div class="action-area">
+                    <% if (stock > 0) { %>
+                        <span class="stock-info text-green">✅ Tersedia <%= stock %> buku</span>
+                        <form action="/book/<%= book.id %>/borrow" method="POST">
+                            <button type="submit" class="btn-borrow">📖 Pinjam Sekarang</button>
+                        </form>
+                    <% } else { %>
+                        <span class="stock-info text-red">❌ Yah, Stok Habis!</span>
+                        <button class="btn-borrow btn-disabled" disabled>Tidak Tersedia</button>
+                    <% } %>
+                </div>
+
+                <a href="/" class="back-link">← Kembali ke Rak Buku</a>
+            </div>
+        </div>
+
+        <div class="review-section">
+            <h2>💬 Ulasan Teman (<%= book.reviews.length %>)</h2>
+
+            <% if (user) { %>
+                <div class="review-form">
+                    <form action="/book/<%= book.id %>/review" method="POST">
+                        <div style="font-weight: bold; margin-bottom: 10px;">Tulis Ulasanmu:</div>
+                        <div class="form-row">
+                            <select name="rating" required>
+                                <option value="5">⭐⭐⭐⭐⭐ (5/5)</option>
+                                <option value="4">⭐⭐⭐⭐ (4/5)</option>
+                                <option value="3">⭐⭐⭐ (3/5)</option>
+                                <option value="2">⭐⭐ (2/5)</option>
+                                <option value="1">⭐ (1/5)</option>
+                            </select>
+                            <textarea name="comment" placeholder="Gimana pendapatmu soal buku ini?" rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="btn-review">Kirim Ulasan</button>
+                    </form>
+                </div>
+            <% } else { %>
+                <p style="color: #777; font-style: italic;">Login dulu untuk menulis ulasan.</p>
+            <% } %>
+
+            <div class="review-list">
+                <% if (book.reviews.length === 0) { %>
+                    <div style="color: #999;">Belum ada ulasan. Jadilah yang pertama!</div>
+                <% } else { %>
+                    <% book.reviews.forEach(review => { %>
+                        <div class="review-card">
+                            <div>
+                                <span class="reviewer-name"><%= review.user.username %></span>
+                                <span class="review-date"><%= review.createdAt.toLocaleDateString('id-ID') %></span>
+                            </div>
+                            <div class="review-stars">
+                                <%= '★'.repeat(review.rating) %><%= '☆'.repeat(5 - review.rating) %>
+                            </div>
+                            <div class="review-text"><%= review.comment %></div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

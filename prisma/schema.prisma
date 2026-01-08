@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  // KITA TULIS LANGSUNG DI SINI BIAR GAK ERROR
+  url      = "mysql://root:@localhost:3306/pustaka_kreatif_db"
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  username       String
+  email          String    @unique
+  password       String
+  role           String    @default("member")
+  xpPoints       Int       @default(0)
+  level          Int       @default(1)
+  currentStreak  Int       @default(0)
+  createdAt      DateTime  @default(now())
+  
+  // Relasi
+  loans          Loan[]
+  readingJourney ReadingJourney[]
+  reviews        Review[]
+}
+
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String
+  author      String
+  isbn        String?
+  synopsis    String   @db.Text
+  coverImage  String?
+  pageCount   Int
+  moodTags    String?
+  createdAt   DateTime @default(now())
+
+  // Relasi
+  copies         BookCopy[]
+  readingJourney ReadingJourney[]
+  reviews        Review[]
+}
+
+model BookCopy {
+  id            Int     @id @default(autoincrement())
+  condition     String
+  shelfLocation String
+  isAvailable   Boolean @default(true)
+  bookId        Int
+  book          Book    @relation(fields: [bookId], references: [id])
+  loans         Loan[]
+}
+
+model Loan {
+  id         Int       @id @default(autoincrement())
+  borrowDate DateTime  @default(now())
+  dueDate    DateTime
+  returnDate DateTime?
+  status     String
+  userId     Int
+  user       User      @relation(fields: [userId], references: [id])
+  copyId     Int
+  bookCopy   BookCopy  @relation(fields: [copyId], references: [id])
+}
+
+model ReadingJourney {
+  id          Int      @id @default(autoincrement())
+  status      String
+  currentPage Int
+  updatedAt   DateTime @updatedAt
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  bookId      Int
+  book        Book     @relation(fields: [bookId], references: [id])
+}
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  rating    Int
+  comment   String   @db.Text
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
+  
+  bookId    Int
+  book      Book     @relation(fields: [bookId], references: [id])
+}
